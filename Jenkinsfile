@@ -51,7 +51,7 @@ pipeline {
        stage('3. Push to Docker Hub') {
             steps {
                 // Securely pulls credentials from Jenkins Credentials Store
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                // withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     bat '''
                         @echo off
 
