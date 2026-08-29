@@ -48,20 +48,18 @@ PATH = "C:\\Windows\\System32;C:\\Users\\nlotl\\AppData\\Local\\Programs\\Docker
 
         // STAGE 3: Login & Push the final artifact to Docker Hub
        stage('3. Push to Docker Hub') {
-            steps {
-                // Securely pulls credentials from Jenkins Credentials Store
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat '''
-                        @echo off
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            bat '''
+                @echo off
+                echo LOGGING IN TO DOCKER HUB
+                docker login -u %DOCKER_USER% -p %DOCKER_PASS%
 
-                        echo LOGGING IN TO DOCKER HUB
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                echo PUSHING IMAGE TO DOCKER HUB
+                docker push lotlikardocker/my-app:latest
 
-                        echo PUSHING IMAGE TO DOCKER HUB
-                        docker push lotlikardocker/my-app:latest
-
-                        echo LOGGING OUT
-                        docker logout
+                echo LOGGING OUT
+                docker logout
                     '''
                 }
             }
