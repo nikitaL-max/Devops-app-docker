@@ -1,43 +1,35 @@
-name: Build, Test, and Push Docker Image
+# # 1. The name of the workflow displayed on the GitHub Actions dashboard tab
+# name: Build and Push Docker Image
 
-on:
-  push:
-    branches: [ "main" ] 
+# # 2. TRIGGER: Defines when this automated script should run
+# on:
+#   push:
+#     branches: [ "main" ]  # Automatically triggers whenever code is pushed to the 'main' branch
 
-jobs:
-  build-test-and-push:
-    runs-on: ubuntu-latest
+# # 3. JOBS: The set of tasks to execute
+# jobs:
+#   build-and-push:
+#     # RUNNER: Spawns a fresh, temporary Ubuntu Linux cloud machine in GitHub's datacenter
+#     runs-on: ubuntu-latest
 
-    steps:
-      # Step 1: Download repository code
-      - name: Checkout Code
-        uses: actions/checkout@v4
+#     # STEPS: The sequential instructions the runner executes
+#     steps:
+    
+#     # STEP 1: Downloads a copy of your source code (Dockerfile, index.html, etc.) into the runner
+#     - name: Checkout Repository
+#       uses: actions/checkout@v4
 
-      # Step 2: BUILD local image for testing
-      - name: Build Docker Image Locally
-        run: docker build -t test-image .
+#     # STEP 2: Authenticates with Docker Hub using your encrypted GitHub Secrets
+#     - name: Log in to Docker Hub
+#       uses: docker/login-action@v3
+#       with:
+#         username: ${{ secrets.DOCKER_USERNAME }}  # Pulls your Docker Hub username from secrets
+#         password: ${{ secrets.DOCKER_PASSWORD }}  # Pulls your Docker Hub password or Personal Access Token
 
-      # Step 3: TEST the container response
-      - name: Test Container HTTP Response
-        run: |
-          docker run -d -p 8080:80 --name test-container test-image
-          sleep 3
-          curl --fail http://localhost:8080 || exit 1
-          docker stop test-container
-          docker rm test-container
-
-      # Step 4: Login to Docker Hub (Only after test succeeds)
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # Step 5: PUSH finished image to Docker Hub
-      - name: Push Image to Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/my-nginx-site:latest
+#     # STEP 3: Compiles your Dockerfile into an Image and uploads it to Docker Hub
+#     - name: Build and Push Docker Image
+#       uses: docker/build-push-action@v5
+#       with:
+#         context: .                                               # Looks in the current folder for the Dockerfile
+#         push: true                                              # Set to 'true' to upload to Docker Hub (if 'false', it only builds)
+#         tags: ${{ secrets.DOCKER_USERNAME }}/my-nginx-site:latest # Formats the image name on Docker Hub

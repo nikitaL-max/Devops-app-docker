@@ -1,0 +1,76 @@
+// "pipeline" defines the start of a Jenkins Declarative Pipeline
+pipeline {
+    
+    // "agent any" tells Jenkins to run this job on any available worker/executor
+    agent any
+
+    // "stages" contains the sequence of steps your pipeline will perform
+    stages {
+
+        // STAGE 1: Compile the Docker Image
+        stage('1. Build Docker Image') {
+            steps {
+                bat '''
+                    @echo off
+                    REM Ensure Jenkins can find docker.exe in the Windows PATH
+                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+
+                    echo ==========================================
+                    echo BUILDING DOCKER IMAGE
+                    echo ==========================================
+                    
+                    REM Build the image using the Dockerfile in the current directory (.)
+                    REM -t sets the repository tag name for Docker Hub
+                    docker build -t lotlikardocker/my-app:latest .
+                '''
+            }
+        }
+
+        // STAGE 2: Test the image in a short-lived container
+        stage('2. Test Docker Container') {
+            steps {
+                bat '''
+                    @echo off
+                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+
+                    echo TESTING CONTAINER RUNTIME
+                    
+                    REM Spin up a temporary container in detached mode (-d) on port 8085
+                    docker run -d --name temp_test_container -p 8085:80 lotlikardocker/my-app:latest
+
+                    REM Wait for 5 seconds using ping (since 'timeout' fails in Jenkins)
+                    ping 127.0.0.1 -n 6 > nul
+
+                    REM Clean up the temporary container after testing 
+                    docker stop temp_test_container
+                    docker rm temp_test_container
+                '''
+            }
+        }
+
+        // STAGE 3: Push the final artifact to Docker Hub
+        stage('3. Push to Docker Hub') {
+            steps {
+                bat '''
+                    @echo off
+                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+
+                    echo PUSHING IMAGE TO DOCKER HUB
+                    
+                    REM Upload the finished image to your remote Docker Hub repository
+                    docker push lotlikardocker/my-app:latest
+                '''
+            }
+        }
+    }
+
+    // "post" actions run after all stages are complete
+    post {
+        success {
+            echo 'SUCCESS: Pipeline completed and image was uploaded to Docker Hub!'
+        }
+        failure {
+            echo 'FAILURE: Pipeline failed. Check the stage console logs.'
+        }
+    }
+}
