@@ -4,8 +4,7 @@ pipeline {
     // "agent any" tells Jenkins to run this job on any available worker/executor
     agent any
     environment {
-        PATH = "C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
-    }
+PATH = "C:\\Windows\\System32;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"    }
     // "stages" contains the sequence of steps your pipeline will perform
     stages {
 
@@ -51,7 +50,7 @@ pipeline {
        stage('3. Push to Docker Hub') {
             steps {
                 // Securely pulls credentials from Jenkins Credentials Store
-                // withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     bat '''
                         @echo off
 
