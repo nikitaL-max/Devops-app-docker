@@ -3,7 +3,9 @@ pipeline {
     
     // "agent any" tells Jenkins to run this job on any available worker/executor
     agent any
-
+    environment {
+        PATH = "C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
+    }
     // "stages" contains the sequence of steps your pipeline will perform
     stages {
 
@@ -13,7 +15,6 @@ pipeline {
                 bat '''
                     @echo off
                     REM Point directly to your user-specific Docker installation path
-                    set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
                     echo ==========================================
                     echo BUILDING DOCKER IMAGE
@@ -30,7 +31,6 @@ pipeline {
             steps {
                 bat '''
                     @echo off
-                    set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
                     echo TESTING CONTAINER RUNTIME
                     
@@ -48,13 +48,12 @@ pipeline {
         }
 
         // STAGE 3: Login & Push the final artifact to Docker Hub
-        stage('3. Push to Docker Hub') {
+       stage('3. Push to Docker Hub') {
             steps {
                 // Securely pulls credentials from Jenkins Credentials Store
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     bat '''
                         @echo off
-                        set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
                         echo LOGGING IN TO DOCKER HUB
                         echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
