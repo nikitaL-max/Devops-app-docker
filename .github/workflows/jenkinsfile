@@ -12,15 +12,14 @@ pipeline {
             steps {
                 bat '''
                     @echo off
-                    REM Ensure Jenkins can find docker.exe in the Windows PATH
-                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+                    REM Point directly to your user-specific Docker installation path
+                    set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
                     echo ==========================================
                     echo BUILDING DOCKER IMAGE
                     echo ==========================================
                     
                     REM Build the image using the Dockerfile in the current directory (.)
-                    REM -t sets the repository tag name for Docker Hub
                     docker build -t lotlikardocker/my-app:latest .
                 '''
             }
@@ -31,7 +30,7 @@ pipeline {
             steps {
                 bat '''
                     @echo off
-                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+                    set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
                     echo TESTING CONTAINER RUNTIME
                     
@@ -48,18 +47,25 @@ pipeline {
             }
         }
 
-        // STAGE 3: Push the final artifact to Docker Hub
+        // STAGE 3: Login & Push the final artifact to Docker Hub
         stage('3. Push to Docker Hub') {
             steps {
-                bat '''
-                    @echo off
-                    set PATH=%PATH%;C:\\Program Files\\Docker\\Docker\\resources\\bin
+                // Securely pulls credentials from Jenkins Credentials Store
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    bat '''
+                        @echo off
+                        set PATH=%PATH%;C:\\Users\\nlotl\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin
 
-                    echo PUSHING IMAGE TO DOCKER HUB
-                    
-                    REM Upload the finished image to your remote Docker Hub repository
-                    docker push lotlikardocker/my-app:latest
-                '''
+                        echo LOGGING IN TO DOCKER HUB
+                        echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
+
+                        echo PUSHING IMAGE TO DOCKER HUB
+                        docker push lotlikardocker/my-app:latest
+
+                        echo LOGGING OUT
+                        docker logout
+                    '''
+                }
             }
         }
     }
